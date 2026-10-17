@@ -1,0 +1,2 @@
+sku,product,category,warehouse,stock_qty,reorder_level,unit_cost,last_restock_date,supplier
+SKU-1001,Basmati Rice 5kg,Grocery,Pune,340,100,420,2025-04-01,Agro Foods Ltd

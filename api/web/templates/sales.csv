@@ -1,0 +1,2 @@
+order_id,order_date,customer,product,category,region,quantity,unit_price,discount_pct,amount
+INV-0001,2025-04-02,Sharma Traders,Basmati Rice 5kg,Grocery,North,20,540,5,10260

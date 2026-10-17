@@ -1,0 +1,59 @@
+{
+  "name": "Agent Factory - Error Alert",
+  "nodes": [
+    {
+      "id": "errortrigger-4385",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        200
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "emailfailurenotice-9127",
+      "name": "Email Failure Notice",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        260,
+        200
+      ],
+      "parameters": {
+        "fromEmail": "agent-factory@example.com",
+        "toEmail": "ops-manager@example.com",
+        "subject": "=Agent Factory failure: {{ $json.workflow.name }}",
+        "emailFormat": "html",
+        "html": "=<h3>Workflow failed</h3><ul><li><b>Workflow:</b> {{ $json.workflow.name }}</li><li><b>Failed node:</b> {{ $json.execution.lastNodeExecuted }}</li><li><b>Error:</b> {{ $json.execution.error.message }}</li><li><b>Execution:</b> {{ $json.execution.url }}</li></ul>",
+        "options": {}
+      },
+      "credentials": {
+        "smtp": {
+          "id": "REPLACE_ME",
+          "name": "SMTP (Factory Reports)"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Email Failure Notice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Kolkata"
+  },
+  "tags": []
+}

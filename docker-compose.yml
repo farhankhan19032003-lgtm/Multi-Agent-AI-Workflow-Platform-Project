@@ -1,0 +1,70 @@
+services:
+  api:
+    build: ./api
+    env_file: .env
+    environment:
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+      DATA_DIR: /srv/data
+    depends_on:
+      - mlflow
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - analytics_data:/srv/data
+
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:latest
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      GENERIC_TIMEZONE: Asia/Kolkata
+      TZ: Asia/Kolkata
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}
+      WEBHOOK_URL: ${N8N_WEBHOOK_URL:-http://localhost:5678/}
+      N8N_PROTOCOL: ${N8N_PROTOCOL:-http}
+      N8N_SECURE_COOKIE: ${N8N_SECURE_COOKIE:-false}
+      EXECUTIONS_DATA_PRUNE: "true"
+      EXECUTIONS_DATA_MAX_AGE: "336"
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./n8n/workflows:/workflows:ro
+    depends_on:
+      - api
+
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:latest
+    restart: unless-stopped
+    command: >
+      mlflow server --host 0.0.0.0 --port 5000
+      --backend-store-uri sqlite:////mlflow/mlflow.db
+      --default-artifact-root /mlflow/artifacts
+    ports:
+      - "5000:5000"
+    volumes:
+      - mlflow_data:/mlflow
+
+  # Production only: automatic HTTPS. Start with:  docker compose --profile prod up -d
+  caddy:
+    image: caddy:2
+    profiles: ["prod"]
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      API_DOMAIN: ${API_DOMAIN:-api.example.com}
+      N8N_DOMAIN: ${N8N_DOMAIN:-n8n.example.com}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+    depends_on:
+      - api
+      - n8n
+
+volumes:
+  analytics_data:
+  n8n_data:
+  mlflow_data:
+  caddy_data:

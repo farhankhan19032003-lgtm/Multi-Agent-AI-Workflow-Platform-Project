@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Agent Factory</title>
+  <meta name="description" content="Upload your company data and chat with 75 specialist AI agents.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2l8.66 5v10L12 22l-8.66-5V7z' fill='%236366f1'/%3E%3Ccircle cx='12' cy='12' r='3' fill='white'/%3E%3C/svg%3E">
+  <script>
+    (function () {
+      var t = null;
+      try { t = localStorage.getItem('af-theme'); } catch (e) {}
+      if (!t) t = window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      document.documentElement.dataset.theme = t;
+    })();
+  </script>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css">
+</head>
+<body>
+
+<!-- Boot guard: never leave the user on a blank page. app.js removes it once the UI is ready. -->
+<div id="boot" class="boot" role="status">Loading Agent Factory…</div>
+<script>
+  (function () {
+    var b = function () { return document.getElementById('boot'); };
+    window.addEventListener('error', function (e) {
+      var el = b(); if (el) { el.className = 'boot bad'; el.textContent = 'Could not start the app: ' + (e.message || 'script error') + '. Press Ctrl+F5 to reload.'; }
+    });
+    setTimeout(function () {
+      var el = b(); if (el && el.className === 'boot') el.textContent = 'Still loading… If this stays, press Ctrl+F5, or open the browser console (F12) and send the red error.';
+    }, 8000);
+  })();
+</script>
+
+<!-- ============================ Login ============================ -->
+<div id="login" class="login hidden">
+  <div class="auth-top"><span class="logo-sm" id="login-logo"></span><span class="auth-brand">Agent Factory</span></div>
+  <form id="login-form" class="auth-card" autocomplete="on" novalidate>
+    <h1 id="auth-title">Welcome back</h1>
+    <p id="auth-sub" class="auth-sub"></p>
+
+    <div id="auth-email-chip" class="email-chip hidden">
+      <span id="auth-email-text"></span><button type="button" id="auth-edit" class="link-btn">Edit</button>
+    </div>
+    <input id="login-email" class="auth-input" type="email" placeholder="Email address" autocomplete="username email" inputmode="email" autocapitalize="off" spellcheck="false">
+    <div id="pw-wrap" class="pw-wrap hidden">
+      <input id="login-password" class="auth-input" type="password" placeholder="Password" autocomplete="current-password">
+      <button type="button" id="pw-toggle" class="pw-toggle" aria-label="Show password"></button>
+    </div>
+    <div id="pw-wrap2" class="pw-wrap hidden">
+      <input id="login-password2" class="auth-input" type="password" placeholder="Confirm password" autocomplete="new-password">
+    </div>
+    <ul id="pw-rules" class="pw-rules hidden"><li id="rule-len">At least 8 characters</li></ul>
+    <a href="#" id="auth-forgot" class="auth-link hidden">Forgot password?</a>
+
+    <p id="login-msg" class="login-msg" role="alert" aria-live="polite"></p>
+    <button class="btn-primary auth-btn" type="submit" id="btn-signin">Continue</button>
+    <button class="btn-secondary auth-btn hidden" type="button" id="btn-resend">Resend email</button>
+
+    <p id="auth-switch" class="auth-switch">Don't have an account? <a href="#" id="auth-switch-link">Sign up</a></p>
+    <p id="auth-back" class="auth-switch hidden"><a href="#" id="auth-back-link">Back to log in</a></p>
+
+    <div id="auth-social" class="auth-social">
+      <div class="auth-or"><span>OR</span></div>
+      <button type="button" id="btn-google" class="btn-secondary auth-btn auth-social-btn">
+        <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17.5z"/><path fill="#FBBC05" d="M10.5 28.7a14.5 14.5 0 0 1 0-9.4l-7.9-6.1a24 24 0 0 0 0 21.6l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.9 2.3-8.4 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg>
+        <span>Continue with Google</span>
+      </button>
+      <button type="button" id="btn-github" class="btn-secondary auth-btn auth-social-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.4c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.03 1.76 2.69 1.25 3.35.96.1-.75.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.28 1.18-3.09-.12-.29-.51-1.46.11-3.04 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.58.23 2.75.11 3.04.74.81 1.18 1.83 1.18 3.09 0 4.42-2.69 5.39-5.25 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+        <span>Continue with GitHub</span>
+      </button>
+    </div>
+  </form>
+</div>
+
+<!-- ============================== App ============================ -->
+<div id="app" class="app hidden">
+  <aside id="sidebar" class="sidebar" aria-label="Chat history">
+    <div class="sb-top">
+      <button id="btn-new" class="sb-new" title="New chat (Ctrl+Shift+O)">
+        <span class="sb-logo" id="sb-logo"></span>
+        <span class="sb-new-label">New chat</span>
+        <span class="sb-new-icon" id="ico-edit"></span>
+      </button>
+      <button id="btn-collapse" class="icon-btn desktop-only" title="Close sidebar" aria-label="Close sidebar"></button>
+    </div>
+    <div class="sb-search"><input id="chat-search" type="search" placeholder="Search chats" aria-label="Search chats"></div>
+    <nav id="chat-list" class="chat-list"></nav>
+    <div class="sb-bottom">
+      <button id="btn-library" class="sb-item"><span id="ico-lib"></span><span>Data library</span><span id="lib-count" class="count"></span></button>
+      <button id="btn-settings" class="sb-item"><span id="ico-set"></span><span>Settings &amp; plan</span></button>
+      <div id="usage-mini" class="usage-mini hidden"><div class="bar"><i id="usage-bar"></i></div><span id="usage-text"></span></div>
+      <button id="btn-theme" class="sb-item"><span id="ico-theme"></span><span id="theme-label">Dark mode</span></button>
+      <div class="user-row">
+        <div class="avatar-sm" id="user-avatar">U</div>
+        <div class="user-meta"><div id="user-email" class="user-email">dev@local</div></div>
+        <button id="btn-signout" class="icon-btn hidden" title="Sign out" aria-label="Sign out"></button>
+      </div>
+    </div>
+  </aside>
+  <div id="scrim" class="scrim"></div>
+
+  <main class="main">
+    <header class="topbar">
+      <button id="btn-menu" class="icon-btn" title="Open sidebar" aria-label="Open sidebar"></button>
+      <div class="agent-select">
+        <button id="agent-btn" class="agent-btn" aria-haspopup="listbox" aria-expanded="false">
+          <span id="agent-icon">🪄</span>
+          <span id="agent-label">Auto</span>
+          <span class="chev" id="ico-chev"></span>
+        </button>
+        <div id="agent-pop" class="popover hidden" role="listbox">
+          <input id="agent-search" type="search" placeholder="Search 75 agents" aria-label="Search agents">
+          <div id="agent-list" class="agent-list"></div>
+        </div>
+      </div>
+      <span class="spacer"></span>
+      <span id="dataset-badge" class="badge"></span>
+      <button id="btn-export" class="icon-btn" title="Download this chat" aria-label="Download this chat"></button>
+    </header>
+
+    <section id="scroll" class="scroll">
+      <div id="empty" class="empty">
+        <div class="logo-lg" id="empty-logo"></div>
+        <h1 id="empty-title">What do you want to analyze?</h1>
+        <p class="muted" id="empty-sub">Ask in English, Hindi or Hinglish. Agents query your data and show their work.</p>
+        <div id="dropzone" class="dropzone" tabindex="0" role="button" aria-label="Upload your files">
+          <div class="dz-ico" id="ico-upload"></div>
+          <div><strong>Upload your company data</strong><div class="muted small">Drop CSV, Excel, JSON, PDF or Word files here, or click to browse. Your data stays in your private workspace.</div></div>
+        </div>
+        <div class="tpl muted small">No file handy? Download a template:
+          <a href="templates/sales.csv" download>Sales</a> · <a href="templates/expenses.csv" download>Expenses</a> ·
+          <a href="templates/inventory.csv" download>Inventory</a> · <a href="templates/customers.csv" download>Customers</a> ·
+          <a href="templates/hr_employees.csv" download>HR</a> · <a href="templates/production_log.csv" download>Production</a>
+          <button id="btn-samples" type="button" class="link">or try public sample datasets</button>
+        </div>
+        <div id="starters" class="starters"></div>
+        <div id="dataset-chips" class="chips"></div>
+      </div>
+      <div id="thread" class="thread" aria-live="polite"></div>
+    </section>
+
+    <footer class="composer-wrap">
+      <form id="composer" class="composer">
+        <div id="attach-tray" class="attach-tray hidden"></div>
+        <div class="comp-row">
+          <button id="btn-attach" class="icon-btn" type="button" title="Attach files or images" aria-label="Attach files or images"></button>
+          <textarea id="input" rows="1" placeholder="Message Agent Factory" aria-label="Message"></textarea>
+          <button id="btn-mic" class="icon-btn hidden" type="button" title="Voice input" aria-label="Voice input"></button>
+          <button id="send" class="send" type="submit" title="Send" aria-label="Send" disabled></button>
+        </div>
+        <input id="file-input" type="file" multiple class="hidden" accept=".csv,.tsv,.xlsx,.xlsm,.xls,.json,.jsonl,.pdf,.docx,.txt,.md,image/*">
+      </form>
+      <p class="disclaimer">Agents can make mistakes. Check important numbers against the SQL shown.</p>
+    </footer>
+  </main>
+</div>
+
+<div id="drop-overlay" class="drop-overlay hidden"><div>Drop files to upload</div></div>
+<div id="toast" class="toast hidden" role="status"></div>
+<div id="modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="modal-card">
+    <div class="modal-head"><h2 id="modal-title">Settings</h2><button id="modal-close" class="icon-btn" aria-label="Close">✕</button></div>
+    <div class="tabs" id="tabs">
+      <button data-tab="general" class="on">General</button><button data-tab="data">Data library</button>
+      <button data-tab="workspace">Workspace</button><button data-tab="plan">Plan &amp; usage</button>
+    </div>
+    <div id="tab-body" class="tab-body"></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

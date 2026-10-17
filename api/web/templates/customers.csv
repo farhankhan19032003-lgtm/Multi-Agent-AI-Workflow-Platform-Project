@@ -1,0 +1,2 @@
+customer_id,name,city,segment,signup_date,total_orders,total_spend,last_order_date,channel
+C-0001,Sharma Traders,Delhi,Wholesale,2023-06-14,48,512000,2025-04-02,Field sales

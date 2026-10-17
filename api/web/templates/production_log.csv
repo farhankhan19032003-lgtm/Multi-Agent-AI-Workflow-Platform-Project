@@ -1,0 +1,2 @@
+date,shift,line,product,units_planned,units_produced,units_defective,downtime_min,downtime_reason
+2025-04-02,A,Line 1,Widget A,1200,1130,18,35,Material shortage

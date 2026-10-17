@@ -1,0 +1,114 @@
+{
+  "name": "Agent Factory - On-Demand Research",
+  "nodes": [
+    {
+      "id": "researchwebhook-8575",
+      "name": "Research Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        200
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "research",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_ME",
+          "name": "Webhook Secret"
+        }
+      },
+      "webhookId": "agent-factory-research"
+    },
+    {
+      "id": "runresearchagents-2146",
+      "name": "Run Research Agents",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        260,
+        200
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://api:8000/v1/workflows/research",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-triggered-by",
+              "value": "n8n"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ query: $json.body.query, max_sources: $json.body.max_sources || 5 }) }}",
+        "options": {
+          "timeout": 300000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_ME",
+          "name": "Agent Factory API Key"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "respond-925",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        520,
+        200
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json.output }}",
+        "options": {}
+      }
+    }
+  ],
+  "connections": {
+    "Research Webhook": {
+      "main": [
+        [
+          {
+            "node": "Run Research Agents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run Research Agents": {
+      "main": [
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Kolkata"
+  },
+  "tags": []
+}

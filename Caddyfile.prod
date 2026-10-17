@@ -1,0 +1,6 @@
+{$API_DOMAIN} {
+	# chat answers stream (SSE): don't buffer them
+	reverse_proxy api:8000 {
+		flush_interval -1
+	}
+}

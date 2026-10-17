@@ -1,0 +1,32 @@
+# Minimal production stack: the API plus Caddy (automatic HTTPS). No n8n / MLflow.
+#   docker compose -f docker-compose.prod.yml up -d --build
+# Reads ./.env (copy api/.env here) and needs API_DOMAIN in it.
+services:
+  api:
+    build: ./api
+    env_file: .env
+    environment:
+      DATA_DIR: /srv/data
+    restart: unless-stopped
+    expose:
+      - "8000"
+    volumes:
+      - analytics_data:/srv/data
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      API_DOMAIN: ${API_DOMAIN:?set API_DOMAIN in .env}
+    volumes:
+      - ./Caddyfile.prod:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+    depends_on:
+      - api
+
+volumes:
+  analytics_data:
+  caddy_data:

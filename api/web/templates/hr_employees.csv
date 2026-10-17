@@ -1,0 +1,2 @@
+employee_id,name,department,designation,join_date,salary,location,manager,status
+E-0001,Anita Rao,Operations,Supervisor,2021-02-10,52000,Pune,R. Kulkarni,Active
