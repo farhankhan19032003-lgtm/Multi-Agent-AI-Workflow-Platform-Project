@@ -1,0 +1,46 @@
+# Render Blueprint: New -> Blueprint -> pick this repo. Secrets (sync: false) are asked for in the dashboard.
+# The data disk needs a paid plan, and a service with a disk runs as a single instance.
+services:
+  - type: web
+    name: agent-factory
+    runtime: docker
+    dockerfilePath: ./api/Dockerfile
+    dockerContext: ./api
+    plan: standard            # ~2 GB RAM. On a smaller plan set WORKERS=1.
+    healthCheckPath: /health
+    disk:
+      name: agent-factory-data
+      mountPath: /srv/data    # per-workspace DuckDB files live here
+      sizeGB: 5
+    envVars:
+      - key: PORT
+        value: "8000"
+      - key: WORKERS
+        value: "2"
+      - key: DATA_DIR
+        value: /srv/data
+      - key: STORAGE
+        value: supabase
+      - key: DEV_NO_AUTH
+        value: "false"
+      - key: LLM_PROVIDER
+        value: google_genai
+      - key: LLM_MODEL
+        value: gemini-3.7-flash
+      - key: LLM_FAST_MODEL
+        value: gemini-3.5-flash-lite
+      - key: LLM_FALLBACK_MODELS
+        value: gemini-3.6-flash,gemini-3.5-flash,gemini-3.5-flash-lite
+      # secrets / per-deployment values: enter them in the Render dashboard
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: GOOGLE_API_KEY
+        sync: false
+      - key: GOOGLE_API_KEYS
+        sync: false
+      - key: CORS_ORIGINS        # https://<your-service>.onrender.com or your own domain
+        sync: false
